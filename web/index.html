@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>晴雨校园助手 · 多工具校园智能体</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">晴</div>
+        <div class="brand-text">
+          <h1>晴雨校园</h1>
+          <p>Campus Copilot</p>
+        </div>
+      </div>
+
+      <div class="status" id="serverStatusBox">
+        <span class="status-dot" id="serverDot"></span>
+        <span id="serverStatus">正在连接…</span>
+        <span class="version">v1.0</span>
+      </div>
+
+      <div class="section-label">快速开始</div>
+      <div class="quick-list">
+        <button class="quick" data-prompt="郑州现在天气怎么样？需要带伞吗？">
+          <span class="quick-icon sun">☀</span>
+          <span>查实时天气与带伞建议</span>
+        </button>
+        <button class="quick" data-prompt="明天早上8点从宿舍去图书馆，帮我看看天气、图书馆开不开，并生成一张出行计划卡。">
+          <span class="quick-icon route">↗</span>
+          <span>生成校园出行计划卡</span>
+        </button>
+        <button class="quick" data-prompt="帮我填写活动报名表：姓名=林晓，学号=20231234，学院=计算机学院，专业=软件工程，班级=软工2301，活动=秋季校园马拉松，活动日期=2026-11-15，联系方式=13800001234">
+          <span class="quick-icon doc">▤</span>
+          <span>填写活动报名表</span>
+        </button>
+        <button class="quick" data-prompt="图书馆几点关门？校车最晚一班几点？">
+          <span class="quick-icon book">◎</span>
+          <span>问校园知识库</span>
+        </button>
+      </div>
+
+      <div class="section-label">能力模块</div>
+      <div class="modules">
+        <div class="module"><b>01</b><span>实时天气</span><em>Open-Meteo</em></div>
+        <div class="module"><b>02</b><span>校园知识库</span><em>12 条</em></div>
+        <div class="module"><b>03</b><span>文档生成</span><em>DOCX</em></div>
+        <div class="module"><b>04</b><span>工作流编排</span><em>4 条</em></div>
+        <div class="module"><b>05</b><span>记忆与偏好</span><em>SQLite</em></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="profile-card">
+          <div class="profile-top">
+            <div class="avatar-sm">同</div>
+            <div>
+              <strong id="profileName">同学</strong>
+              <span id="profileCity">默认城市：郑州</span>
+            </div>
+          </div>
+          <div class="profile-tags">
+            <span>校园出行</span><span>事务办理</span>
+          </div>
+        </div>
+        <p class="copyright">郑州大学 · 第 8 组<br/>智能体框架路线</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2>校园出行与事务助手</h2>
+          <p>查天气 · 给建议 · 填表单 · 答校务</p>
+        </div>
+        <div class="top-actions">
+          <button id="mobileInspectorBtn" class="mobile-only-btn" aria-label="查看执行轨迹与产物">轨迹/产物</button>
+          <span class="pill"><i></i> 10 工具 · LLM 规划</span>
+          <button id="resetBtn" class="ghost-btn">新对话</button>
+        </div>
+      </header>
+
+      <div id="messages" class="messages" aria-live="polite"></div>
+
+      <div class="composer-wrap">
+        <form id="composer" class="composer">
+          <textarea id="input" rows="1" placeholder="试试：郑州天气 / 明天去图书馆 / 帮我填报名表"></textarea>
+          <button type="submit" id="sendBtn" aria-label="发送">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>
+          </button>
+        </form>
+        <div class="hint">Enter 发送 · Shift + Enter 换行 · 天气数据来自 Open-Meteo 实时接口</div>
+      </div>
+    </main>
+
+    <aside class="inspector">
+      <div class="inspector-head">
+        <h3>执行轨迹</h3>
+        <span id="latency" class="latency">待命</span>
+        <button id="closeInspector" class="drawer-close" aria-label="关闭轨迹面板">×</button>
+      </div>
+      <div id="trace" class="trace empty">
+        <div class="empty-state">
+          <div class="empty-icon">⌁</div>
+          <p>工具调用会显示在这里</p>
+          <span>每一步都有参数、耗时与状态</span>
+        </div>
+      </div>
+
+      <div class="inspector-head artifact-head">
+        <h3>产物</h3>
+        <span class="mini-label">DOCX</span>
+      </div>
+      <div id="artifacts" class="artifacts empty">
+        <div class="empty-state small">
+          <p>还没有生成文件</p>
+          <span>填写表单或生成出行卡后可下载</span>
+        </div>
+      </div>
+
+      <div class="inspector-head">
+        <h3>数据源</h3>
+      </div>
+      <div id="citations" class="citations">
+        <div class="source-row"><span class="source-dot weather"></span><span>Open-Meteo 天气</span><em>实时</em></div>
+        <div class="source-row"><span class="source-dot kb"></span><span>校园知识库</span><em>示例 12 条</em></div>
+        <div class="source-row"><span class="source-dot memory"></span><span>SQLite 会话记忆</span><em>本地</em></div>
+      </div>
+
+      <div class="inspector-head">
+        <h3>本轮数据</h3>
+        <span class="mini-label">SNAPSHOT</span>
+      </div>
+      <div id="snapshot" class="snapshot empty">
+        <div class="empty-state small">
+          <p>暂无结构化数据</p>
+          <span>天气、出行卡与表单字段会汇总在这里</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <button id="drawerBackdrop" class="drawer-backdrop" aria-label="关闭轨迹面板"></button>
+
+  <!--DEMO_DATA-->
+  <script src="/app.js"></script>
+</body>
+</html>
+

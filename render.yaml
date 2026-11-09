@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: qingyu-campus
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: LLM_PLANNER
+        value: "true"
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
